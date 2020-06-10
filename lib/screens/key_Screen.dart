@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:market40Master/constants.dart';
-import 'package:market40Master/style/market_40_palette.dart';
-import 'package:market40Master/widgets/drawer_menu.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:qr/qr.dart';
 
-class KeyScreen extends StatelessWidget {
-  const KeyScreen(
-      {Key key, this.userFirstName, this.userLastName, this.userEmail})
-      : super(key: key);
+import 'package:market40Master/constants.dart';
+import 'package:market40Master/models/user_model.dart';
+import 'package:market40Master/style/market_40_palette.dart';
+import 'package:market40Master/widgets/drawer_menu.dart';
 
-  final String userFirstName;
-  final String userLastName;
-  final String userEmail;
+class KeyScreen extends StatelessWidget {
+  final User user;
+
+  const KeyScreen({Key key, @required this.user}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +21,7 @@ class KeyScreen extends StatelessWidget {
         centerTitle: true,
         elevation: 3,
       ),
-      drawer: DrawerMenu(),
+      drawer: DrawerMenu(user: user,),
       body: SafeArea(
         child: Container(
           height: MediaQuery.of(context).size.height,
@@ -39,7 +37,7 @@ class KeyScreen extends StatelessWidget {
                 children: <Widget>[
                   Text(
                     'Scan your key to enter',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25, color: Colors.white),
                   ),
                   SizedBox(
                     height: 20,
@@ -55,11 +53,10 @@ class KeyScreen extends StatelessWidget {
                       child: Padding(
                         padding: EdgeInsets.all(20),
                         child: PrettyQr(
-                            //image: AssetImage('assets/images/ic_launcher.png'),
                             typeNumber: 3,
                             elementColor: MarketColors.carbon[800],
                             size: 300,
-                            data: 'this is a qr test',
+                            data: user.idcodeQR,
                             errorCorrectLevel: QrErrorCorrectLevel.M,
                             roundEdges: true),
                       ),
@@ -68,7 +65,9 @@ class KeyScreen extends StatelessWidget {
                   SizedBox(
                     height: 20,
                   ),
-                  Text('Hello Bob')
+                  Text('Hello ${user.firstname}!',
+                  style: kTitleTextStyle,
+                  )
                 ],
               ),
             ),

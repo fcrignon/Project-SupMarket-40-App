@@ -1,8 +1,14 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:market40Master/constants.dart';
+import 'package:market40Master/models/user_model.dart';
+import 'package:market40Master/services/input_validator.dart';
 import 'package:market40Master/style/market_40_palette.dart';
 import 'package:market40Master/widgets/rounded_gradiant_button.dart';
+import 'package:market40Master/api/api_market_40.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({Key key}) : super(key: key);
@@ -12,10 +18,21 @@ class SignInScreen extends StatefulWidget {
 }
 
 class _SignInScreenState extends State<SignInScreen> {
+  // Create storage for jwt
+  final storage = new FlutterSecureStorage();
   final _formKey = GlobalKey<FormState>();
   bool isHided = true;
-  String email;
-  String password;
+  String _email;
+  String _password;
+
+  Market40Api api = Market40Api();
+  Validator validator = Validator();
+
+  void displayDialog(context, title, text) => showDialog(
+        context: context,
+        builder: (context) =>
+            AlertDialog(title: Text(title), content: Text(text)),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -31,9 +48,12 @@ class _SignInScreenState extends State<SignInScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
               Flexible(
-                child: Container(
-                  //child: Image.asset('assets/images/Market40Logo.png'),
-                  child: SvgPicture.asset('assets/svg/Market40Logo.svg')
+                child: Hero(
+                  tag: 'logo',
+                  child: Container(
+                    child: Image.asset('assets/images/Market40LogoBright.png'),
+                    //child: SvgPicture.asset('assets/svg/Market40Logo.svg')
+                  ),
                 ),
               ),
               Padding(
@@ -78,9 +98,9 @@ class _SignInScreenState extends State<SignInScreen> {
                                 ),
                                 keyboardType: TextInputType.emailAddress,
                                 maxLength: 32,
-                                onSaved: (String value) {
-                                  email = value.trim();
-                                },
+                                onSaved: (String value) =>
+                                    setState(() => _email = value.trim()),
+                                validator: validator.emailValidator,
                               ),
                             ),
                             //Passwor form field
@@ -111,9 +131,9 @@ class _SignInScreenState extends State<SignInScreen> {
                                 ),
                                 obscureText: isHided,
                                 maxLength: 32,
-                                onSaved: (String value) {
-                                  password = value.trim();
-                                },
+                                onSaved: (String value) =>
+                                    setState(() => _password = value.trim()),
+                                validator: validator.passwordvalidator,
                               ),
                             ),
                           ],
@@ -125,10 +145,32 @@ class _SignInScreenState extends State<SignInScreen> {
                         child: Text("Forgot password?"),
                       ),
                       //button for validating the input and SignIn
-                      Hero(tag: 'heroOne',
-                      child: RoundedGradientButton(label: 'SignIn', onPressed: () {
-                        Navigator.pushNamed(context, '/key');
-                      })),
+                      RoundedGradientButton(
+                          label: 'SignIn',
+                          onPressed: () async {
+                            _formKey.currentState.save();
+                            if (_formKey.currentState.validate() == true) {
+                              var res = await api.signInUser(_email, _password);
+                              if (res == 404) {
+                                displayDialog(context, "User unknow",
+                                    "No account was found matching that email");
+                              } else if (res == 401) {
+                                displayDialog(context, "Wrong password",
+                                    "Your account was found but the password doesn't match");
+                              } else {
+                                var decodedRes = json.decode(res);
+                                storage.write(
+                                    key: 'jwt', value: decodedRes['token']);
+                                storage.write(
+                                    key: 'id', value: decodedRes['id']);
+                                var data = await api.fetchUserData();
+                                User user = User.fromJson(json.decode(data));
+
+                                Navigator.pushNamed(context, '/key',
+                                    arguments: user);
+                              }
+                            }
+                          }),
                       //flat button for passing to the register screen
                       FlatButton(
                         onPressed: () {

@@ -19,7 +19,7 @@ class _MyAppState extends State<MyApp>{
       debugShowCheckedModeBanner: false,
       theme: Theme.marketThemeData,
       initialRoute: '/',
-      routes: routes,
+      onGenerateRoute: RouteGenerator.generateRoute,
     );
   }
 }

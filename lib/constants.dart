@@ -55,6 +55,7 @@ const kTableTitleTextStyle =
 const kTableItemsTextStyle = TextStyle(
   fontSize: 16,
 );
+const kTitleTextStyle = TextStyle(color: Colors.white, fontSize: 24);
 
 const kTotalPriceTextStyle =
     TextStyle(fontSize: 18, fontWeight: FontWeight.bold);
