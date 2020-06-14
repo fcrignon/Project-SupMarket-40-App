@@ -15,7 +15,6 @@ class Network {
     Response response = await get(url, headers: {'x-access-token': jwt});
     if (response.statusCode == 200) {
       print('starting loading data');
-      print(response.body);
       return response.body;
     } else if (response.statusCode == 204) {
       print('no content: ${response.statusCode}');
@@ -77,7 +76,9 @@ class Network {
     Response response = await get(url, headers: {'x-access-token': jwt});
     if (response.statusCode == 201) {
       print('New receipt created');
-      return response.body;
+      return response.statusCode;
+    } else if (response.statusCode == 500) {
+      return response.statusCode;
     } else {
       throw Exception('Failled to create new receipt ${response.statusCode}');
     }

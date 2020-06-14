@@ -7,6 +7,7 @@ import 'package:market40Master/services/network/api_market_40.dart';
 import 'package:async/async.dart';
 import 'package:market40Master/utils/style/constants.dart';
 import 'package:market40Master/utils/style/market_40_palette.dart';
+import 'package:market40Master/widgets/custom_alert_dialogue.dart';
 import 'package:market40Master/widgets/drawer_menu.dart';
 import 'package:market40Master/widgets/empty_cart.dart';
 import 'package:market40Master/widgets/receipt_widget.dart';
@@ -22,7 +23,13 @@ class ReceiptScreen extends StatefulWidget {
 class _ReceiptScreen extends State<ReceiptScreen> {
   ReceiptList receiptList = ReceiptList();
   final AsyncMemoizer _memoizer = AsyncMemoizer();
-  bool isNull = true;
+
+  void displayDialog(context, title, text) => showDialog(
+      context: context,
+      builder: (context) => CustomAlertDialogue(
+            label: title,
+            content: text,
+          ));
 
   Future getReceipts() {
     return this._memoizer.runOnce(() async {
@@ -63,12 +70,15 @@ class _ReceiptScreen extends State<ReceiptScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          Market40Api().createReceipt();
-           var data = await Market40Api().fetchReceipts();
-      var receiptMap = json.decode(data);
-          print(data);
-          print(receiptMap);
-         setState(() => receiptList = ReceiptList.fromJson(receiptMap));
+          var res = await Market40Api().createReceipt();
+          if (res == 201) {
+            var data = await Market40Api().fetchReceipts();
+            var receiptMap = json.decode(data);
+            setState(() => receiptList = ReceiptList.fromJson(receiptMap));
+          } else{
+            displayDialog(context, "Error",
+                                    "Failled to create new receipt 500. Please try again. ");
+          }
         },
         label: Text('Simulate new receipt'),
         icon: Icon(Icons.add),
@@ -84,58 +94,73 @@ class _ReceiptScreen extends State<ReceiptScreen> {
         child: FutureBuilder(
             future: getReceipts(),
             builder: (BuildContext context, AsyncSnapshot snapshot) {
-              print('snap  : ${snapshot.data}');
               switch (snapshot.connectionState) {
                 case ConnectionState.none:
                 case ConnectionState.waiting:
-                  print('hello');
                   return Center(child: CircularProgressIndicator());
+                case ConnectionState.done:
+                  if (snapshot.data == null) {                 
+                    return EmptyList();
+                  }
+                  return ReceiptListBuilder(receiptList: receiptList);
                 default:
-                  //return Center(child: Text(snapshot.data.toString())
                   if (snapshot.data == null) {
-                    print('project snapshot null data is: ${snapshot.data}');
                     return EmptyList();
                   } else if (snapshot.hasError) {
                     return Text("${snapshot.error}");
                   } else {
-                    print('snap 2 : ${snapshot.data}');
-                    return Column(
-                      children: <Widget>[
-                        Padding(
-                          padding: const EdgeInsets.only(top: 15, bottom: 10),
-                          child: Container(
-                            height: 40,
-                            decoration: kContainerStyle,
-                            child: Center(
-                              child: Text('Touch the Receipt to get details.',
-                                  style: kTitleTextStyleGreen),
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: ListView.separated(
-                            scrollDirection: Axis.vertical,                        
-                            shrinkWrap: true,
-                            itemCount: (receiptList == null ||
-                                    receiptList.receipts == null ||
-                                    receiptList.receipts.length == 0)
-                                ? 0
-                                : receiptList.receipts.length,
-                            separatorBuilder: (context, index) => Divider(),
-                            itemBuilder: (BuildContext context, int index) {
-                              Receipt receipt = receiptList.receipts[index];
-                              return ReceiptCard(
-                                receipt: receipt,
-                              );
-                            },
-                          ),
-                        ),
-                      ],
-                    );
+                    return ReceiptListBuilder(receiptList: receiptList);
                   }
               }
             }),
       ),
+    );
+  }
+}
+
+// widget for drawing all receips
+class ReceiptListBuilder extends StatelessWidget {
+  const ReceiptListBuilder({
+    Key key,
+    @required this.receiptList,
+  }) : super(key: key);
+
+  final ReceiptList receiptList;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.only(top: 15, bottom: 10),
+          child: Container(
+            height: 40,
+            decoration: kContainerStyle,
+            child: Center(
+              child: Text('Touch the Receipt to get details.',
+                  style: kTitleTextStyleGreen),
+            ),
+          ),
+        ),
+        Expanded(
+          child: ListView.separated(
+            scrollDirection: Axis.vertical,
+            shrinkWrap: true,
+            itemCount: (receiptList == null ||
+                    receiptList.receipts == null ||
+                    receiptList.receipts.length == 0)
+                ? 0
+                : receiptList.receipts.length,
+            separatorBuilder: (context, index) => Divider(),
+            itemBuilder: (BuildContext context, int index) {
+              Receipt receipt = receiptList.receipts[index];
+              return ReceiptCard(
+                receipt: receipt,
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }

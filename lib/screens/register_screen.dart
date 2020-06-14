@@ -194,8 +194,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     "That username is already registered",
                                     "Please try to sign up using another username or log in if you already have an account.");
                               else {
-                                print(
-                                    'here is res: $res and ${res.toString()}');
                                 displayDialog(context, "Error",
                                     "An unknown error occurred.");
                               }

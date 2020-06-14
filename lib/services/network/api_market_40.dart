@@ -39,7 +39,6 @@ class Market40Api {
   Future<dynamic> signInUser(String userEmail, String password) async {
     Network network = Network('$apiUrl/auth/login');
     var res = await network.postSignInUser(userEmail, password);
-    print('here api market: $res');
     return res;
   }
 
@@ -49,7 +48,6 @@ class Market40Api {
     Network network = Network('$apiUrl/auth/register');
     var res = await network.postNewUser(
         userFirstName, password, userEmail, userLastName);
-    print('here is the regiseter res :$res');
     return res;
   }
 }
