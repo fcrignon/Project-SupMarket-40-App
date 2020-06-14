@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:market40Master/constants.dart';
+import 'package:market40Master/utils/style/constants.dart';
 
 class RoundedGradientButton extends StatelessWidget {
   final String label;

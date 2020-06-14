@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:market40Master/routes/routes.dart';
-import 'package:market40Master/style/market_40_palette.dart' as Theme;
+import 'package:market40Master/services/routes/routes.dart';
+import 'package:market40Master/utils/style/market_40_palette.dart' as Theme;
 
 void main() => runApp(MyApp());
 

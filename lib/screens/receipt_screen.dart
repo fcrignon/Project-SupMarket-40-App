@@ -1,16 +1,15 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:market40Master/api/api_market_40.dart';
-import 'package:market40Master/models/user_model.dart';
-import 'package:market40Master/style/market_40_palette.dart';
-import 'package:market40Master/test/api_mockaroo.dart';
-import 'package:market40Master/test/receipt_model.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:market40Master/services/models/receipt_model.dart';
+import 'package:market40Master/services/models/user_model.dart';
+import 'package:market40Master/services/network/api_market_40.dart';
+import 'package:async/async.dart';
+import 'package:market40Master/utils/style/constants.dart';
+import 'package:market40Master/utils/style/market_40_palette.dart';
 import 'package:market40Master/widgets/drawer_menu.dart';
 import 'package:market40Master/widgets/empty_cart.dart';
 import 'package:market40Master/widgets/receipt_widget.dart';
-import '../constants.dart';
-
-//TODO build splash screen for waiting data
 
 class ReceiptScreen extends StatefulWidget {
   final User user;
@@ -22,35 +21,16 @@ class ReceiptScreen extends StatefulWidget {
 
 class _ReceiptScreen extends State<ReceiptScreen> {
   ReceiptList receiptList = ReceiptList();
+  final AsyncMemoizer _memoizer = AsyncMemoizer();
   bool isNull = true;
 
-  // void getReceiptData() async {
-  //   var data = await MockarooAPI().getReceipts();
-  //   var receiptMap = json.decode(data);
-  //   if (data == null) {
-  //     isNull = true;
-  //   } else {
-  //     isNull = false;
-  //     setState(() => receiptList = ReceiptList.fromJson(receiptMap));
-  //   }
-  // }
-
-  void getReceiptsData() async {
-    var data = await Market40Api().fetchReceipts();
-    var receiptMap = json.decode(data);
-    if (data == null) {
-      isNull == true;
-    } else {
-      isNull = false;
-      setState(() => receiptList = ReceiptList.fromJson(receiptMap));
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    //getReceiptData();
-    getReceiptsData();
+  Future getReceipts() {
+    return this._memoizer.runOnce(() async {
+      var data = await Market40Api().fetchReceipts();
+      var receiptMap = json.decode(data);
+      receiptList = ReceiptList.fromJson(receiptMap);
+      return receiptList;
+    });
   }
 
   @override
@@ -68,24 +48,29 @@ class _ReceiptScreen extends State<ReceiptScreen> {
               onTap: () {
                 Navigator.pushNamed(context, '/key', arguments: widget.user);
               },
-              child: Icon(Icons.nfc),
+              child: SvgPicture.asset(
+                'assets/icon/qrCodeIconWhite.svg',
+                width: 30,
+                height: 30,
+              ),
             ),
           ),
         ],
       ),
       drawer: DrawerMenu(
         user: widget.user,
+        currentRoute: '/receipt',
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          var data = await Market40Api().createReceipt();
-          var receiptMap = json.decode(data);
-          setState(() {
-            isNull = false;
-            receiptList = ReceiptList.fromJson(receiptMap);
-          });
+          Market40Api().createReceipt();
+           var data = await Market40Api().fetchReceipts();
+      var receiptMap = json.decode(data);
+          print(data);
+          print(receiptMap);
+         setState(() => receiptList = ReceiptList.fromJson(receiptMap));
         },
-        label: Text('Create new receipt'),
+        label: Text('Simulate new receipt'),
         icon: Icon(Icons.add),
         backgroundColor: MarketColors.rederror[600],
       ),
@@ -95,37 +80,61 @@ class _ReceiptScreen extends State<ReceiptScreen> {
         decoration: BoxDecoration(
           gradient: kGreenGradient,
         ),
-        padding: EdgeInsets.all(20),
-        child: isNull
-            ? EmptyList()
-            : Column(
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text('Touch the Receipt to get details.',
-                        style: kTitleTextStyle),
-                  ),
-                  //TODO build futur buider
-                  Expanded(
-                    child: ListView.separated(
-                      scrollDirection: Axis.vertical,
-                      shrinkWrap: true,
-                      itemCount: (receiptList == null ||
-                              receiptList.receipts == null ||
-                              receiptList.receipts.length == 0)
-                          ? 0
-                          : receiptList.receipts.length,
-                      separatorBuilder: (context, index) => Divider(),
-                      itemBuilder: (BuildContext context, int index) {
-                        Receipt receipt = receiptList.receipts[index];
-                        return ReceiptCard(
-                          receipt: receipt,
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
+        padding: EdgeInsets.only(left: 20, right: 20),
+        child: FutureBuilder(
+            future: getReceipts(),
+            builder: (BuildContext context, AsyncSnapshot snapshot) {
+              print('snap  : ${snapshot.data}');
+              switch (snapshot.connectionState) {
+                case ConnectionState.none:
+                case ConnectionState.waiting:
+                  print('hello');
+                  return Center(child: CircularProgressIndicator());
+                default:
+                  //return Center(child: Text(snapshot.data.toString())
+                  if (snapshot.data == null) {
+                    print('project snapshot null data is: ${snapshot.data}');
+                    return EmptyList();
+                  } else if (snapshot.hasError) {
+                    return Text("${snapshot.error}");
+                  } else {
+                    print('snap 2 : ${snapshot.data}');
+                    return Column(
+                      children: <Widget>[
+                        Padding(
+                          padding: const EdgeInsets.only(top: 15, bottom: 10),
+                          child: Container(
+                            height: 40,
+                            decoration: kContainerStyle,
+                            child: Center(
+                              child: Text('Touch the Receipt to get details.',
+                                  style: kTitleTextStyleGreen),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: ListView.separated(
+                            scrollDirection: Axis.vertical,                        
+                            shrinkWrap: true,
+                            itemCount: (receiptList == null ||
+                                    receiptList.receipts == null ||
+                                    receiptList.receipts.length == 0)
+                                ? 0
+                                : receiptList.receipts.length,
+                            separatorBuilder: (context, index) => Divider(),
+                            itemBuilder: (BuildContext context, int index) {
+                              Receipt receipt = receiptList.receipts[index];
+                              return ReceiptCard(
+                                receipt: receipt,
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    );
+                  }
+              }
+            }),
       ),
     );
   }

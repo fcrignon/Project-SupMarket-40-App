@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:market40Master/constants.dart';
-import 'package:market40Master/style/market_40_palette.dart';
+import 'package:market40Master/services/network/api_market_40.dart';
+import 'package:market40Master/utils/style/constants.dart';
+import 'package:market40Master/widgets/custom_alert_dialogue.dart';
 import 'package:market40Master/widgets/rounded_gradiant_button.dart';
 import 'package:market40Master/services/input_validator.dart';
-import 'package:market40Master/api/api_market_40.dart';
 
 class RegisterScreen extends StatefulWidget {
   RegisterScreen({Key key}) : super(key: key);
@@ -19,16 +19,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
   String _lastName;
   String _email;
   String _password;
-  String _password2;
 
   Market40Api api = Market40Api();
   Validator validator = Validator();
 
-//TODO make better shape for the alert
+ 
   void displayDialog(context, title, text) => showDialog(
         context: context,
         builder: (context) =>
-            AlertDialog(title: Text(title), content: Text(text)),
+            CustomAlertDialogue(label: title , content: text ,)
       );
 
   @override
@@ -49,7 +48,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   tag: 'logo',
                   child: Container(
                     height: 150,
-                    child: Image.asset('assets/images/Market40LogoBright.png'),
+                    child: Image.asset('assets/images/Market40LogoExtended.png'),
                   ),
                 ),
               ),
@@ -68,10 +67,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         padding: EdgeInsets.all(8.0),
                         child: Text(
                           'Register',
-                          style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: MarketColors.applegreen[600]),
+                          style: kTitleSignInUpStyle
                         ),
                       ),
                       Form(
@@ -91,9 +87,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   fillColor: Colors.white,
                                   prefixIcon: Icon(Icons.person),
                                   hintText: 'Enter your first name',
-                                  labelStyle: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold),
+                                  labelStyle: kTextformFieldTextStyle,
                                   labelText: 'First name',
                                 ),
                                 maxLength: 32,
@@ -114,9 +108,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   fillColor: Colors.white,
                                   prefixIcon: Icon(Icons.person),
                                   hintText: 'Enter your Last name',
-                                  labelStyle: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold),
+                                  labelStyle: kTextformFieldTextStyle,
                                   labelText: 'Last name',
                                 ),
                                 maxLength: 32,
@@ -137,9 +129,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   fillColor: Colors.white,
                                   prefixIcon: Icon(Icons.mail),
                                   hintText: 'Enter your email',
-                                  labelStyle: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold),
+                                  labelStyle: kTextformFieldTextStyle,
                                   labelText: 'Email',
                                 ),
                                 keyboardType: TextInputType.emailAddress,
@@ -170,9 +160,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                         });
                                       }),
                                   hintText: 'Enter your password',
-                                  labelStyle: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold),
+                                  labelStyle: kTextformFieldTextStyle,
                                   labelText: 'Password',
                                 ),
                                 obscureText: isHided,
@@ -182,53 +170,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 validator: validator.passwordvalidator,
                               ),
                             ),
-                            //_password confirm field
-                            // Padding(
-                            //   padding: EdgeInsets.only(
-                            //       left: 20, right: 20, bottom: 10),
-                            //   child: TextFormField(
-                            //     decoration: InputDecoration(
-                            //       filled: true,
-                            //       fillColor: Colors.white,
-                            //       prefixIcon: Icon(Icons.lock),
-                            //       suffixIcon: IconButton(
-                            //           icon: Icon(isHided
-                            //               ? Icons.visibility
-                            //               : Icons.visibility_off),
-                            //           onPressed: () {
-                            //             setState(() {
-                            //               isHided
-                            //                   ? isHided = false
-                            //                   : isHided = true;
-                            //             });
-                            //           }),
-                            //       hintText: 'Confirm your password',
-                            //       labelStyle: TextStyle(
-                            //           fontSize: 18,
-                            //           fontWeight: FontWeight.bold),
-                            //       labelText: 'Confirm Password',
-                            //     ),
-                            //     obscureText: isHided,
-                            //     maxLength: 32,
-                            //     //Todo regarder pourquoi la validation pwd2 ne fonctione pas
-                            //     onSaved: (String value) =>
-                            //         setState(() => _password2 = value.trim()),
-                            //     validator: (value) {
-                            //       print(_password);
-                            //       if (value != _password) {
-                            //         return "Password doesn't match";
-                            //       }else {
-                            //       return null;
-                            //       }
-                            //     },
-                            //   ),
-                            // ),
                           ],
                         ),
                       ),
 
                       //button for validating the input
-                      //TODO finir le bouton register
                       Padding(
                         padding: const EdgeInsets.all(10.0),
                         child: RoundedGradientButton(
@@ -238,7 +184,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             if (_formKey.currentState.validate() == true) {
                               var res = await api.registerUser(
                                   _firstName, _password, _email, _lastName);
-                              //TODO do  waitting circle
                               if (res == 201) {
                                 displayDialog(context, "Success",
                                     "The user was created. Log in now.");
@@ -249,7 +194,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     "That username is already registered",
                                     "Please try to sign up using another username or log in if you already have an account.");
                               else {
-                              print('here is res: $res and ${res.toString()}');
+                                print(
+                                    'here is res: $res and ${res.toString()}');
                                 displayDialog(context, "Error",
                                     "An unknown error occurred.");
                               }

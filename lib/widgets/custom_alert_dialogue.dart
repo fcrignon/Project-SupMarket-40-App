@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 class CustomAlertDialogue extends StatelessWidget {
   final String label;
-  final String text;
-  const CustomAlertDialogue({Key key, this.label, this.text}) : super(key: key);
+  final String content;
+  const CustomAlertDialogue({Key key, this.label, this.content}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -13,12 +13,22 @@ class CustomAlertDialogue extends StatelessWidget {
           borderRadius: BorderRadius.circular(25),
         ),
         elevation: 5.0,
-        child: Column(
-          children: <Widget>[
-            Text(label),
-            
-            
-          ],
+        child: Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: Container(
+            height: 200,
+            child: Center(
+              child: Column(
+                children: <Widget>[
+                  Text(label, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),),
+                  Divider(),
+                  Text(content, style: TextStyle(fontSize: 18))
+                  
+                  
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );

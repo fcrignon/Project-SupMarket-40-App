@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:market40Master/services/models/user_model.dart';
+import 'package:market40Master/utils/style/constants.dart';
+import 'package:market40Master/utils/style/market_40_palette.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:qr/qr.dart';
-
-import 'package:market40Master/constants.dart';
-import 'package:market40Master/models/user_model.dart';
-import 'package:market40Master/style/market_40_palette.dart';
 import 'package:market40Master/widgets/drawer_menu.dart';
 
 class KeyScreen extends StatelessWidget {
@@ -21,7 +20,7 @@ class KeyScreen extends StatelessWidget {
         centerTitle: true,
         elevation: 3,
       ),
-      drawer: DrawerMenu(user: user,),
+      drawer: DrawerMenu(user: user, currentRoute:'/key',),
       body: SafeArea(
         child: Container(
           height: MediaQuery.of(context).size.height,

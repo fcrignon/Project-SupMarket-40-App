@@ -1,13 +1,12 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:market40Master/constants.dart';
-import 'package:market40Master/models/user_model.dart';
 import 'package:market40Master/services/input_validator.dart';
-import 'package:market40Master/style/market_40_palette.dart';
+import 'package:market40Master/services/models/user_model.dart';
+import 'package:market40Master/services/network/api_market_40.dart';
+import 'package:market40Master/utils/style/constants.dart';
+import 'package:market40Master/utils/style/market_40_palette.dart';
+import 'package:market40Master/widgets/custom_alert_dialogue.dart';
 import 'package:market40Master/widgets/rounded_gradiant_button.dart';
-import 'package:market40Master/api/api_market_40.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class SignInScreen extends StatefulWidget {
@@ -29,10 +28,11 @@ class _SignInScreenState extends State<SignInScreen> {
   Validator validator = Validator();
 
   void displayDialog(context, title, text) => showDialog(
-        context: context,
-        builder: (context) =>
-            AlertDialog(title: Text(title), content: Text(text)),
-      );
+      context: context,
+      builder: (context) => CustomAlertDialogue(
+            label: title,
+            content: text,
+          ));
 
   @override
   Widget build(BuildContext context) {
@@ -51,8 +51,8 @@ class _SignInScreenState extends State<SignInScreen> {
                 child: Hero(
                   tag: 'logo',
                   child: Container(
-                    child: Image.asset('assets/images/Market40LogoBright.png'),
-                    //child: SvgPicture.asset('assets/svg/Market40Logo.svg')
+                    child:
+                        Image.asset('assets/images/Market40LogoExtended.png'),
                   ),
                 ),
               ),
@@ -71,8 +71,7 @@ class _SignInScreenState extends State<SignInScreen> {
                         padding: EdgeInsets.all(8.0),
                         child: Text(
                           'Welcome, please sign in',
-                          style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold),
+                          style: kTitleSignInUpStyle,
                         ),
                       ),
                       Form(
@@ -91,9 +90,7 @@ class _SignInScreenState extends State<SignInScreen> {
                                   fillColor: Colors.white,
                                   prefixIcon: Icon(Icons.mail),
                                   hintText: 'Enter your email',
-                                  labelStyle: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold),
+                                  labelStyle: kTextformFieldTextStyle,
                                   labelText: 'Email',
                                 ),
                                 keyboardType: TextInputType.emailAddress,
@@ -124,9 +121,7 @@ class _SignInScreenState extends State<SignInScreen> {
                                         });
                                       }),
                                   hintText: 'Enter your password',
-                                  labelStyle: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold),
+                                  labelStyle: kTextformFieldTextStyle,
                                   labelText: 'Password',
                                 ),
                                 obscureText: isHided,
@@ -140,10 +135,10 @@ class _SignInScreenState extends State<SignInScreen> {
                         ),
                       ),
                       //flat button for reseting you password
-                      FlatButton(
-                        onPressed: null,
-                        child: Text("Forgot password?"),
-                      ),
+                      // FlatButton(
+                      //   onPressed: null,
+                      //   child: Text("Forgot password?"),
+                      // ),
                       //button for validating the input and SignIn
                       RoundedGradientButton(
                           label: 'SignIn',
